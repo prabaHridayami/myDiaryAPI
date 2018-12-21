@@ -14,6 +14,12 @@ class Diary_model extends CI_Model
         return $this->db->insert_id();
     }
 
+    public function insert_gallery(array $data)
+    {
+        $this->db->insert('gallery', $data);
+        return $this->db->insert_id();
+    }
+
     public function edit_diary(array $data, $id_diary){
         $query = $this->db->where('id_diary',$id_diary)
                             ->set($data)
@@ -23,14 +29,23 @@ class Diary_model extends CI_Model
     }
 
     public function viewbyuser($id_user){
-        $query = $this->db->get_where('diary',array('id_user'=>$id_user));
+        $query = $this->db->select("*")
+                        ->where('id_user',$id_user)
+                        ->order_by('id_diary','DESC')
+                        ->get('diary');
 
         $data = null;
         foreach($query->result() as $row){
+            if($row->image != NULL){
+                $img = $row->image;
+            }else{
+                $img = "http://192.168.43.79/myDiary/image/default.jpg";   
+            }
             $data [] = [
             'id_diary' => $row->id_diary,
             'title' => $row->title,
-            'diary' => $row->diary
+            'diary' => $row->diary,
+            'image' => $img
             ];
         }
 
@@ -42,10 +57,16 @@ class Diary_model extends CI_Model
 
         $data = null;
         foreach($query->result() as $row){
+            if($row->image != NULL){
+                $img = $row->image;
+            }else{
+                $img = "http://192.168.43.79/myDiary/image/default.jpg";   
+            }
             $data [] = [
             'id_diary' => $row->id_diary,
             'title' => $row->title,
-            'diary' => $row->diary
+            'diary' => $row->diary,
+            'image' =>$img
             ];
         }
 
@@ -57,39 +78,19 @@ class Diary_model extends CI_Model
 
         $data = null;
         foreach($query->result() as $row){
-            $data [] = [
-            'title' => $row->title,
-            'diary' => $row->diary
-            ];
-        }
-
-        return $data;
-    }
-
-    public function viewimgbydiary($id_diary){
-        $query = $this->db->get_where('gallery',array('id_diary'=>$id_diary));
-        
-        $data = null;
-        foreach($query->result() as $row){
-            if($row->image != null){
-                $image = 'http://192.168.43.79/myDiary/gallery'.$row->image;
+            if($row->image != NULL){
+                $img = $row->image;
             }else{
-                $image = null;
+                $img = "http://192.168.43.79/myDiary/image/default.jpg";   
             }
-
-            $data [] = [
-            'id_image' => $row->title,
-            'image' => $image
+            $data = [
+            'title' => $row->title,
+            'diary' => $row->diary,
+            'image' => $img
             ];
         }
 
         return $data;
-    }
-
-    public function deleteimg($id_diary){
-        $this->db->where('id_diary',$id_diary);
-        $this->db->delete('gallery');
-        return true;
     }
 
     public function delete($id_diary){
